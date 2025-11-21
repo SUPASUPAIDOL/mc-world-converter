@@ -4,6 +4,10 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/mc-world-converter/',
+  build: {
+    outDir: 'docs',
+  },
   plugins: [
     react(),
     nodePolyfills({
