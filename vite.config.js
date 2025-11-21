@@ -7,11 +7,12 @@ export default defineConfig({
   base: '/mc-world-converter/',
   build: {
     outDir: 'docs',
+    minify: false, // Disable minification to avoid issues with protodef's eval
   },
   plugins: [
     react(),
     nodePolyfills({
-      include: ['buffer', 'process', 'util', 'stream', 'events'],
+      include: ['buffer', 'process', 'util', 'stream', 'events', 'zlib'],
       globals: {
         Buffer: true,
         global: true,
