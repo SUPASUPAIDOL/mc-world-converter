@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import * as nbt from 'prismarine-nbt';
+import { parse, writeUncompressed } from 'mcnbt';
 import { Buffer } from 'buffer';
 
 export async function convertWorld(file, onStatusUpdate) {
@@ -17,8 +17,6 @@ export async function convertWorld(file, onStatusUpdate) {
         let buffer = Buffer.from(levelDatContent);
 
         // Check for Bedrock header (Version + Length, 8 bytes)
-        // Version is usually a small integer (e.g., 8, 9).
-        // NBT Compound tag starts with 0x0A.
         let header = null;
         let version = 0;
 
@@ -35,17 +33,20 @@ export async function convertWorld(file, onStatusUpdate) {
             }
         }
 
-        const { parsed, type } = await nbt.parse(buffer);
+        // Parse NBT using mcnbt
+        const parsed = parse(buffer);
 
         onStatusUpdate('Converting world data...');
-        const root = parsed.value;
+
+        // mcnbt returns the parsed data directly
+        const root = parsed.data;
 
         const tagsToRemove = ['eduOffer', 'eduSharedResource', 'educationFeaturesEnabled'];
 
         let modified = false;
 
         tagsToRemove.forEach(tag => {
-            if (root[tag]) {
+            if (root[tag] !== undefined) {
                 delete root[tag];
                 modified = true;
                 console.log(`Removed ${tag}`);
@@ -58,7 +59,8 @@ export async function convertWorld(file, onStatusUpdate) {
 
         onStatusUpdate('Repacking world...');
 
-        const newNbtBuffer = nbt.writeUncompressed(parsed, type);
+        // Write back using mcnbt
+        const newNbtBuffer = writeUncompressed(parsed);
         let finalBuffer = newNbtBuffer;
 
         if (header) {
